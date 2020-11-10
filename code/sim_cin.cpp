@@ -14,6 +14,7 @@ using namespace std;
 
 typedef map<pair<int, int>, int> pcn;   // copy number at a position
 
+int use_grandparent;
 
 // Read posterior distributions of parameters from file
 // parameter1	parameter2	distance	weights
@@ -79,7 +80,7 @@ void get_params_file(string dir_param, vector<string>& filenames, int verbose = 
 
 
 // Simulate the growth of one cell into a single organoid (clone)
-Clone run_sim(double birth_rate, double death_rate, int Nend, double arm_prob, double chr_prob, double multi_prob, int skip, unsigned long rseed, string outdir, int genotype_diff = 0, double chr_weight = 1.0, int chr_sel=0, int use_ablen=0, string suffix="", string prefix="", int model = 0, string fitness_vals="", int num_subclone = 0, double tmin = 0, double tmax = 0, double min_clone_freq = 0, double max_clone_freq = 0, int num_clonal_mutation = 0, string file_cmut = "", int verbose = 0){
+Clone run_sim(double birth_rate, double death_rate, int Nend, double arm_prob, double chr_prob, double multi_prob, int skip, int only_mut, unsigned long rseed, string outdir, int genotype_diff = 0, double chr_weight = 1.0, int chr_sel=0, int use_ablen=0, string suffix="", string prefix="", int model = 0, string fitness_vals="", int num_subclone = 0, double tmin = 0, double tmax = 0, double min_clone_freq = 0, double max_clone_freq = 0, int num_clonal_mutation = 0, string file_cmut = "", int verbose = 0){
     Clone clone;
 
     double lambda = birth_rate - death_rate;
@@ -203,10 +204,7 @@ Clone run_sim(double birth_rate, double death_rate, int Nend, double arm_prob, d
     }
 
     if(use_ablen == 1){     // Output all the tree lenghts
-        vector<double> tratio;
         if(fitness_vals != ""){
-            // clone.get_treelen_ratios(tratio, clone.cells, skip);
-            // cout << "\t" << tratio[0] << "\t" << tratio[1];
             vector<double> blens;
             clone.get_treelen_vec(blens, clone.cells, skip);
             cout << blens[0];
@@ -221,6 +219,19 @@ Clone run_sim(double birth_rate, double death_rate, int Nend, double arm_prob, d
         // sum_stats.push_back(tlen);
         // cout << tlen << endl;
         cout << tlen << "\t";
+
+        if(verbose > 1) cout << "\ngetting branch length ratios" << endl;
+        vector<double> ratios;
+        clone.get_treelen_ratios(ratios, clone.cells, skip, only_mut, use_grandparent, verbose);
+        double avg_ratio = 0;
+        for(auto r : ratios){
+         if(verbose > 1)  cout << r << endl;
+          avg_ratio += r;
+        }
+        if(ratios.size() > 0){
+          avg_ratio = avg_ratio / ratios.size();
+        }
+        cout << avg_ratio << "\t";
     }
 
     int ndenovo = 0;
@@ -313,6 +324,7 @@ void set_bulk_params_random(vector<double>& params,  double min_birth_rate, doub
     params.push_back(mut_rate);
     params.push_back(birth_rate);
 }
+
 
 // set bulk parameters for one run according to weighted choice from posterior distributions
 void set_bulk_params(vector<double>& params, const vector<string>& filenames,  double min_birth_rate, double max_birth_rate, double max_multi_prob, int verbose = 0){
@@ -441,24 +453,26 @@ void get_bulk_stat(pcn& bulk_cnp, pcn& bulk_cnc, int nsample, int ndenovo, int v
 }
 
 
-void sim_bulk(int nsample, double min_birth_rate, double max_birth_rate, double death_rate, int min_ncell, int max_ncell, double min_arm_prob, double max_arm_prob, double min_chr_prob, double max_chr_prob, double min_mut_rate, double max_mut_rate, double avg_mut_rate, double max_multi_prob, int skip, unsigned long rseed, string dir_param, string outdir, int genotype_diff = 0, double chr_weight = 1.0, int chr_sel=0, int use_ablen=0, string suffix="", string prefix="", int model = 0, string fitness_vals="", int num_subclone = 0, double tmin = 0, double tmax = 0, double min_clone_freq = 0, double max_clone_freq = 0, int num_clonal_mutation = 0, string file_cmut = "", int verbose = 0){
+void sim_bulk(int nsample, double min_birth_rate, double max_birth_rate, double death_rate, int min_ncell, int max_ncell, double min_arm_prob, double max_arm_prob, double min_chr_prob, double max_chr_prob, double min_mut_rate, double max_mut_rate, double avg_mut_rate, double max_multi_prob, int skip, int only_mut, unsigned long rseed, string dir_param, string outdir, int genotype_diff = 0, double chr_weight = 1.0, int chr_sel=0, int use_ablen=0, string suffix="", string prefix="", int model = 0, string fitness_vals="", int num_subclone = 0, double tmin = 0, double tmax = 0, double min_clone_freq = 0, double max_clone_freq = 0, int num_clonal_mutation = 0, string file_cmut = "", int verbose = 0){
     pcn bulk_cnp;   // used to compute the average of bulk CNPs
     pcn bulk_cnc;
     int ndenovo = 0;
-    // upport for moving iostreams was added to GCC 5.1 (not work on cs cluster with default gcc)
-    ofstream fcn(" "), fcn_rate(" ");
+    // support for moving iostreams was added to GCC 5.1 (not work on cs cluster with default gcc)
+    string outfile = outdir + "bulk_cn" + suffix + ".txt";
+    string outfile_rate = outdir + "bulk_rate" + suffix + ".txt";
+    // ofstream fcn(" "), fcn_rate(" ");
+    ofstream fcn(outfile);
+    ofstream fcn_rate(outfile_rate);
     vector<string> filenames;
 
     get_params_file(dir_param, filenames, verbose);
 
     // Suppress all the output when verbose = -1
-    if(verbose >= 0){
-        string outfile = outdir + "bulk_cn" + suffix + ".txt";
-        fcn = ofstream(outfile);
-        // Output the parameters used for each simulation for double checking
-        string outfile_rate = outdir + "bulk_rate" + suffix + ".txt";
-        fcn_rate = ofstream(outfile_rate);
-    }
+    // if(verbose >= 0){
+        // fcn = ofstream(outfile);
+        // // Output the parameters used for each simulation for double checking
+        // fcn_rate = ofstream(outfile_rate);
+    // }
 
     string orig_suffix = suffix;
     double avg_bulk_birth_rate = 0, avg_bulk_mut_rate = 0, avg_bulk_chr_rate = 0, avg_bulk_arm_rate = 0, avg_bulk_mp_rate = 0;
@@ -494,7 +508,7 @@ void sim_bulk(int nsample, double min_birth_rate, double max_birth_rate, double 
             // cout << "\tEffective mutation rate (μ/β): " << cell.mutation_rate / ((cell.birth_rate-cell.death_rate)/cell.birth_rate) << endl;
         }
         suffix = orig_suffix + "_bulk" + to_string(i+1);
-        Clone s1 = run_sim(birth_rate, death_rate, ncell, arm_prob, chr_prob, multi_prob, skip, rseed + i, outdir, genotype_diff, chr_weight, chr_sel, use_ablen, suffix, prefix, model, fitness_vals, num_subclone, tmin, tmax, min_clone_freq, max_clone_freq, num_clonal_mutation, file_cmut, verbose);
+        Clone s1 = run_sim(birth_rate, death_rate, ncell, arm_prob, chr_prob, multi_prob, skip, only_mut, rseed + i, outdir, genotype_diff, chr_weight, chr_sel, use_ablen, suffix, prefix, model, fitness_vals, num_subclone, tmin, tmax, min_clone_freq, max_clone_freq, num_clonal_mutation, file_cmut, verbose);
 
         avg_bulk_ncell += ncell;
         avg_bulk_num_mut += s1.num_novel_mutation;
@@ -600,10 +614,10 @@ void sim_bulk(int nsample, double min_birth_rate, double max_birth_rate, double 
 
     get_bulk_stat(bulk_cnp, bulk_cnc, nsample, ndenovo, verbose);
 
-    if(verbose >= 0){
+    // if(verbose >= 0){
         fcn.close();
         fcn_rate.close();
-    }
+    // }
 }
 
 
@@ -640,6 +654,7 @@ int main(int argc, char const *argv[]) {
     double chr_weight;
     int use_ablen;
     int skip; // number of cells to skip when computing division time
+    int only_mut;  // only consider branch ratios when new mutation is introduced
     string outdir, prefix, suffix; // output
 
     unsigned long seed;
@@ -710,6 +725,8 @@ int main(int argc, char const *argv[]) {
       ("prefix,p", po::value<string>(&prefix)->default_value("run1"), "prefix of output file (it will be sim-data-N if not specified")
       ("suffix,s", po::value<string>(&suffix)->default_value(""), "suffix of output file")
       ("skip", po::value<int>(&skip)->default_value(3), "number of cells to skip when computing division time")
+      ("only_mut", po::value<int>(&only_mut)->default_value(0), "when to consider branch ratios (1: only when there are mutations introduced to the node)")
+      ("use_grandparent", po::value<int>(&use_grandparent)->default_value(1), "whether to check grandparent when computing branch ratios")
 
       ("seed", po::value<unsigned long>(&seed)->default_value(0), "seed used for generating random numbers")
       ("verbose", po::value<int>(&verbose)->default_value(0), "verbose level (0: default, 1: print information of final cells; 2: print information of all cells)")
@@ -748,9 +765,9 @@ int main(int argc, char const *argv[]) {
             arm_prob = params[1];
             birth_rate = params[2];
         }
-        run_sim(birth_rate, death_rate, Nend, arm_prob, chr_prob, multi_prob, skip, rseed, outdir, genotype_diff, chr_weight, chr_sel, use_ablen, suffix, prefix, model, fitness_vals, num_subclone, tmin, tmax, min_clone_freq, max_clone_freq, num_clonal_mutation, file_cmut, verbose);
+        run_sim(birth_rate, death_rate, Nend, arm_prob, chr_prob, multi_prob, skip, only_mut, rseed, outdir, genotype_diff, chr_weight, chr_sel, use_ablen, suffix, prefix, model, fitness_vals, num_subclone, tmin, tmax, min_clone_freq, max_clone_freq, num_clonal_mutation, file_cmut, verbose);
     }else{
-        sim_bulk(nsample, min_birth_rate, max_birth_rate, death_rate, min_ncell, max_ncell, min_arm_prob, max_arm_prob, min_chr_prob, max_chr_prob, min_mut_rate, max_mut_rate, avg_mut_rate, max_multi_prob, skip, rseed, dir_param, outdir, genotype_diff, chr_weight, chr_sel, use_ablen, suffix, prefix, model, fitness_vals, num_subclone, tmin, tmax, min_clone_freq, max_clone_freq, num_clonal_mutation, file_cmut, verbose);
+        sim_bulk(nsample, min_birth_rate, max_birth_rate, death_rate, min_ncell, max_ncell, min_arm_prob, max_arm_prob, min_chr_prob, max_chr_prob, min_mut_rate, max_mut_rate, avg_mut_rate, max_multi_prob, skip, only_mut, rseed, dir_param, outdir, genotype_diff, chr_weight, chr_sel, use_ablen, suffix, prefix, model, fitness_vals, num_subclone, tmin, tmax, min_clone_freq, max_clone_freq, num_clonal_mutation, file_cmut, verbose);
     }
 
     return 0;

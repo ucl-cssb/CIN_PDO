@@ -1233,12 +1233,14 @@ public:
                      dcell1.parent_ID = parent_ID;
                      dcell1.num_division = rcell.num_division + 1;
                      copy(rcell.chr_probs, rcell.chr_probs + NUM_CHR, dcell1.chr_probs);
+                     dcell1.time_occur = t;
 
                      Cell dcell2 = Cell(rcell);
                      dcell2.cell_ID = cell_count + 2;
                      dcell2.parent_ID = parent_ID;
                      dcell2.num_division = rcell.num_division + 1;
                      copy(rcell.chr_probs, rcell.chr_probs + NUM_CHR, dcell2.chr_probs);
+                     dcell2.time_occur = t;
 
                      dcell1.sibling = &dcell2;
                      dcell2.sibling = &dcell1;
@@ -1382,10 +1384,9 @@ public:
      /*
         This method prints out the sum of ratios of branch lenghts before and after a division (skipping first k branches)
       */
-      void get_treelen_ratios(vector<double>& avg, vector<Cell>& cells, int skip = 3){
-         double sum1 = 0, sum2 = 0;
-         int n1 = 0, n2 = 0;
-         // svector<float> uniq_ratios;
+      void get_treelen_ratios(vector<double>& ratios, vector<Cell>& cells, int skip = 3, int only_mut = 0, int use_grandparent = 0, int verbose  = 0){
+         // double sum1 = 0, sum2 = 0;
+         // int n1 = 0, n2 = 0;
          // cout << "\nbranch length ratios:";
          for(unsigned int i = 0; i < cells.size() ; i++) {
              Cell *cell = &cells[i];
@@ -1396,31 +1397,59 @@ public:
 
              if(cell->daughters.size() <= 0) continue;
 
-             Cell* ppcell = pcell->get_parent(cells);
-             double branch_len1 = pcell->time_occur - ppcell->time_occur;
+
+             double branch_len1 = 0;
+             if(use_grandparent == 1){
+               Cell* ppcell = pcell->get_parent(cells);
+               branch_len1 = pcell->time_occur - ppcell->time_occur;
+               if(verbose > 1){
+                 cout << "checking division time of grandparent" << endl;
+                 cout << "blen1 " << ppcell->cell_ID << "\t" << pcell->cell_ID << "\t" << branch_len1 << endl;
+               }
+             }else{
+               branch_len1 = cell->time_occur - pcell->time_occur;
+               if(verbose > 1){
+                 cout << "checking division time of parent" << endl;
+                 cout << "blen1 " << pcell->cell_ID << "\t" << cell->cell_ID << "\t" << branch_len1 << endl;
+               }
+             }
 
              Cell* d = get_cell_from_ID(cells, cell->daughters[0]);
              double branch_len2 = d->time_occur - cell->time_occur;
-             double ratio = branch_len2 / branch_len1;
-             // uniq_ratios.push_back(ratio);
-             if(ratio > 1){
-                sum1 += ratio;
-                n1 += 1;
-            }else{
-                sum2 += ratio;
-                n2 += 1;
-            }
-             // cout << "\t" << ratio;
+             double ratio = branch_len1 / branch_len2;
+             // cout << "blen2 " << cell->cell_ID << "\t" << d->cell_ID << "\t" << branch_len2 << endl;
+
+             if(only_mut == 1){   // only consider nodes with mutations, since a fitness cost is introduced only if a new mutation occurs
+               // each mutation in the cell has a time stamp
+               int has_new_mut = 0;
+               for(auto m : cell->mutations){
+                 if(m.time_occur == cell->time_occur){
+                   if(verbose > 1){
+                     cout << "mu time for: " << pcell->cell_ID << "\t" << m.time_occur << "\t" << pcell->time_occur << endl;
+                     cout << "blen2 " << cell->cell_ID << "\t" << d->cell_ID << "\t" << branch_len2 << endl;
+                   }
+                   has_new_mut = 1;
+                   break;
+                 }
+               }
+               if(has_new_mut > 0) ratios.push_back(ratio);
+             }else{
+               ratios.push_back(ratio);
+             }
+            // if(ratio > 1){
+            //     sum1 += ratio;
+            //     n1 += 1;
+            // }else{
+            //     sum2 += ratio;
+            //     n2 += 1;
+            // }
+            // cout << "\t" << ratio;
          }
          // cout << endl;
          // cout << sum1 << "\t" << n1 << endl;
          // cout << sum2 << "\t" << n2 << endl;
-         double avg1 = sum1 / n1;
-         double avg2 = sum2 / n2;
-         avg.push_back(avg1);
-         avg.push_back(avg2);
-
-         // return avg;
+         // double avg1 = sum1 / n1;
+         // double avg2 = sum2 / n2;
      }
 
 

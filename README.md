@@ -1,11 +1,9 @@
 # Introduction
-This program simulates single-cell copy number profiles (CNPs) of cells from one patient-derived organoid (PDO) to learn mutation rates and selection forces.
+This program simulates the growth of a patient tumour-derived organoid (PDTO) with a stochastic birth-death branching process to learn mutation rates and selection forces.
 <!-- uses ABC (approximate Bayesian computation) approach to fit  -->
 
-It can also simulates bulk CNPs (average CNPs of all cells in an organoid) of multiple organoids.
+It generates cell lineage tree and single-cell copy number profiles (CNPs). It can also simulates bulk CNPs (average CNPs of all cells in an organoid) of multiple organoids.
 
-The simulation program simulates the growth of an organoid with a stochastic birth-death branching process,
-which starts from a single cell and stops until tens of cells (10-100).
 <!-- Assume there is only cell birth, since there is at most 1 cell death. -->
 Only relative arm-/chr-level CNAs are simulated.
 All CNAs are assumed to be reciprocal.
@@ -29,8 +27,8 @@ Option "verbose" controls how much to output.
 
 * When verbose=0, a vector of summary statistics is written to the standard output.
 The summary statistics represents
-average absolute unique chr-level CN, average absolute unique arm-level CN, half lineage tree length, number of altered arms across all cells (count 1 when one arm is altered in any cell), sum of average CN of all cells across all arms, number of de novo CNAs, and number of arms altered in more than one cell, respectively.
-The first three values were used for ABC inference of mutation rates and birth rates (selection coefficients).
+average absolute unique chr-level copy number changes, average absolute unique arm-level copy number changes, half lineage tree length, average ratios of branch length starting from the parent of a node to that starting from the daughter of the node, number of altered arms across all cells (count 1 when one arm is altered in any cell), sum of average CN of all cells across all arms, number of de novo CNAs, and number of arms altered in more than one cell, respectively.
+The first four values were used for ABC inference of mutation rates and birth rates (selection coefficients).
 
 * When verbose=1, two files will be output, including the copy numbers for each cell in the final population and summary information of the simulation.
 
