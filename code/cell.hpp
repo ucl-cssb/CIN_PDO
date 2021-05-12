@@ -520,7 +520,7 @@ public:
         if(verbose > 1) cout << "\tmutation on cell " << cell_ID << " chr " << chr+1;
 
         // && sibling->cn_profile[pos]>0
-        if(reciprocal && sibling!=NULL){
+        if(reciprocal && sibling != NULL){
             sibling->cn_profile[pos1]--;
             sibling->cn_profile[pos2]--;
             Mutation mutr(mut_ID, time_occur, chr, 0, -1, reciprocal);
@@ -549,7 +549,7 @@ public:
         if(verbose > 1) cout << "\tmutation on cell " << cell_ID << " chr " << chr+1;
 
         //  && sibling->cn_profile[pos]>0
-        if(reciprocal && sibling!=NULL){
+        if(reciprocal && sibling != NULL){
             sibling->cn_profile[pos1]++;
             sibling->cn_profile[pos2]++;
             Mutation mutr(mut_ID, time_occur, chr, 0, 1, reciprocal);
@@ -587,7 +587,7 @@ public:
         if(verbose > 1) cout << "\tmutation on cell " << cell_ID << " chr " << chr+1 << " arm " << arm+1;
 
         // && sibling->cn_profile[pos]>0
-        if(reciprocal && sibling!=NULL){
+        if(reciprocal && sibling != NULL){
             sibling->cn_profile[pos]--;
             Mutation mutr(mut_ID, time_occur, chr, arm, -1, reciprocal);
             sibling->mutations.push_back(mutr);
@@ -621,7 +621,7 @@ public:
         if(verbose > 1) cout << "\tmutation on cell " << cell_ID << " chr " << chr+1 << " arm " << arm+1;
 
         //  && sibling->cn_profile[pos]>0
-        if(reciprocal && sibling!=NULL){
+        if(reciprocal && sibling != NULL){
             sibling->cn_profile[pos]++;
             Mutation mutr(mut_ID, time_occur, chr, arm, 1, reciprocal);
             sibling->mutations.push_back(mutr);
@@ -756,6 +756,7 @@ public:
 
     int tot_division;    // total number of divisions in the population
     int time_first_mut;     // which division the first mutation occurs
+    // double avg_elen;   // average time until next division for cells with immediate fitness changes
 
     // int num_cell;
     // double ploidy;
@@ -781,6 +782,7 @@ public:
             fitness = 0; // neutral evolution
             tot_division = 0;
             time_end = 0;
+            // avg_elen = 0;
     }
 
 
@@ -803,6 +805,7 @@ public:
          this->subclone_fitness.clear();
             this->num_clonal_mutation = num_clonal_mutation;
             this->num_novel_mutation = 0;
+            // this->avg_elen = 0;
 
             Cell ncell(1, 0);
 
@@ -845,6 +848,7 @@ public:
             this->time_first_mut = 0;
             this->tot_division = 0;
             this->model = model;
+            // this->avg_elen = 0;
 
             Cell ncell(1, 0);
 
@@ -870,7 +874,7 @@ public:
                     ncell.cn_profile[cp.first] = cp.second;
                 }
             }
-            else if (num_clonal_mutation>0) {
+            else if (num_clonal_mutation > 0) {
                 // ncell.generate_mutations_fixed(mut_ID, 0, num_clonal_mutation);
                 nu = num_clonal_mutation;
                 if(verbose > 1) cout << "Generating " << nu << " clonal mutations in cell " << ncell.cell_ID << endl;
@@ -1175,7 +1179,7 @@ public:
         mutation_rate -- the mutation rate per cell division;
         model -- 0: neutral, 1: gradual, 2: punctuated
        output:
-        a tree-like structure. For each Cell, its children, occurence time, birth rate, death rate
+        a tree-like structure. For each cell, its children, occurence time, birth rate, death rate
      */
      void grow_with_cnv(int num_subclone, int num_clonal_mutation, int model, const vector<double>& fitness, const vector<double>& time_occur, int Nend, double birth_rate, double death_rate, double mutation_rate, double arm_prob, double chr_prob, double multi_prob, int genotype_diff = 0, double chr_weight = 1.0, int chr_sel = 0, string file_cmut = "", int verbose = 0){
              double t = 0;
@@ -1261,13 +1265,13 @@ public:
 
                          if(verbose > 1){
                              cout << "Number of mutations (total, chr-level, arm-level) in cell " << dcell1.cell_ID << ": ";
-                             for(int i=0; i<nu1.size(); i++){
+                             for(int i = 0; i < nu1.size(); i++){
                                  cout << "\t" << nu1[i];
                              }
                              cout << endl;
 
                              cout << "Number of mutations (total, chr-level, arm-level) in cell " << dcell2.cell_ID << ": ";
-                             for(int i=0; i<nu2.size(); i++){
+                             for(int i = 0; i < nu2.size(); i++){
                                  cout << "\t" << nu2[i];
                              }
                              cout << endl;
@@ -1313,17 +1317,18 @@ public:
                                  if(genotype_diff > 0){ // The genotype changes are based on initial cell
                                      dcell1.birth_rate = birth_rate / (1 + gdiff1 * fitness[0]);
                                      dcell2.birth_rate = birth_rate / (1 + gdiff2 * fitness[0]);
+
+                                     if(verbose > 1){
+                                         cout << "new birth rate for cell "<< dcell1.cell_ID  << " is " << dcell1.birth_rate << " with genotype difference " << gdiff1 << endl;
+                                         cout << "new birth rate for cell "<< dcell2.cell_ID  << " is " << dcell2.birth_rate << " with genotype difference " << gdiff2 << endl;
+                                     }
                                  }else{
                                      dcell1.birth_rate = rcell.birth_rate * (1 + fitness[0]);
                                      dcell2.birth_rate = rcell.birth_rate * (1 + fitness[0]);
                                  }
-                                 if(verbose > 1){
-                                     cout << "new birth rate for cell "<< dcell1.cell_ID  << " is " << dcell1.birth_rate << " with genotype difference " << gdiff1 << endl;
-                                     cout << "new birth rate for cell "<< dcell2.cell_ID  << " is " << dcell2.birth_rate << " with genotype difference " << gdiff2 << endl;
-                                 }
                             }
                             // cout << "fitness " << fitness[0] << endl;
-                            if(model == 3){
+                            if(model == 3){  // positive selection in term of genotype difference
                                 dcell1.birth_rate = birth_rate * (1 + gdiff1 * fitness[0]);
                                 dcell2.birth_rate = birth_rate * (1 + gdiff2 * fitness[0]);
                                 if(verbose > 1){
@@ -1382,7 +1387,7 @@ public:
      }
 
      /*
-        This method prints out the sum of ratios of branch lenghts before and after a division (skipping first k branches)
+        This method prints out the sum of ratios of branch lengths before and after a division (skipping first k branches)
       */
       void get_treelen_ratios(vector<double>& ratios, vector<Cell>& cells, int skip = 3, int only_mut = 0, int use_grandparent = 0, int verbose  = 0){
          // double sum1 = 0, sum2 = 0;
@@ -1454,7 +1459,7 @@ public:
 
 
      /*
-        This method prints out unique branch lenghts (skipping first k branches)
+        This method prints out unique branch lengths (skipping first k branches)
       */
      void get_treelen_vec(vector<double>& blens, vector<Cell>& cells, int skip = 3){
          double sum = 0;
@@ -1470,7 +1475,7 @@ public:
 
 
      /*
-        This method prints out half the sum of branch lenghts (skipping first k branches)
+        This method prints out half the sum of branch lengths (skipping first k branches)
       */
      double get_treelen(vector<Cell>& cells, int skip = 3){
          double sum = 0;
@@ -1480,7 +1485,6 @@ public:
                  // if (i <= skip){
                  //     continue;
                  // }
-                 // write the cell lineages in a file for visualization
                  Cell* pcell = cell.get_parent(cells);
                  double branch_len = cell.time_occur - pcell->time_occur;
                  // if (i <= skip){
@@ -1491,6 +1495,40 @@ public:
 
          }
          sum = sum / 2;
+         return sum;
+     }
+
+
+     /*
+        This method prints out half branch lengths after immediate de novo CNAs (skipping first k branches)
+      */
+     double get_elen(vector<Cell>& cells, int skip = 3){
+         double sum = 0.0;
+         // double nblen = 0.0;
+         for(unsigned int i = 0; i < cells.size() ; i++) {
+             Cell cell = cells[i];
+             if(cell.parent_ID <= skip) continue;
+             // if (i <= skip){
+             //     continue;
+             // }
+             Cell* pcell = cell.get_parent(cells);
+             Cell* gpcell = pcell->get_parent(cells);
+
+             // check if de novo CNAs occur in the parent cell
+             int nnmut = pcell->mutations.size() - gpcell->mutations.size();
+
+
+             if(nnmut > 0){ // cell will have fitness changes, reflected in the waiting to next division
+               // find daughter cells
+               double branch_len = cell.time_occur - pcell->time_occur;
+               // nblen++;
+               sum += branch_len;
+               // cout << nnmut << " new mutations at cell " << pcell->cell_ID << " compared with parent " << gpcell->cell_ID << " with branch length " << branch_len << endl;
+             }
+         }
+         // if(nblen > 0) sum = sum / nblen;
+         sum = sum / 2;
+
          return sum;
      }
 
@@ -2212,6 +2250,11 @@ public:
          // }
          fout << odd << endl;
          fout.close();
+     }
+
+     //
+     void get_avg_blen(){
+
      }
 
      void write_summary_stats(vector<double>& sum_stats, string fname){

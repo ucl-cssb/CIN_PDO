@@ -139,7 +139,7 @@ Clone run_sim(double birth_rate, double death_rate, int Nend, double arm_prob, d
         {
             if(verbose == 1) cerr << "Directory Created: " << outdir <<endl;
         }
-        if(suffix==""){
+        if(suffix == ""){
             string sep = "-";
             suffix = sep + to_string(num_subclone) + sep + to_string(Nend) + sep + to_string(int(birth_rate*10)) + sep + to_string(int(death_rate*10)) + sep + to_string(int(mutation_rate)) + sep + to_string(num_clonal_mutation) + sep + prefix + sep + to_string(int(tmin)) + sep + to_string(int(rseed));
         }
@@ -215,11 +215,13 @@ Clone run_sim(double birth_rate, double death_rate, int Nend, double arm_prob, d
             cout << "\t";
         }
     }else{
+        // Output half tree length (cell lineage tree is symmetrical)
         double tlen = clone.get_treelen(clone.cells, skip);
         // sum_stats.push_back(tlen);
         // cout << tlen << endl;
         cout << tlen << "\t";
 
+        // Output branch length ratios of parent and daughter cells of current cell
         if(verbose > 1) cout << "\ngetting branch length ratios" << endl;
         vector<double> ratios;
         clone.get_treelen_ratios(ratios, clone.cells, skip, only_mut, use_grandparent, verbose);
@@ -232,6 +234,10 @@ Clone run_sim(double birth_rate, double death_rate, int Nend, double arm_prob, d
           avg_ratio = avg_ratio / ratios.size();
         }
         cout << avg_ratio << "\t";
+
+        // Output half the sum length of branches after immediate CNAs
+        double elen = clone.get_elen(clone.cells, skip);
+        cout << elen << "\t";
     }
 
     int ndenovo = 0;
