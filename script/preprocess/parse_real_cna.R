@@ -1,9 +1,10 @@
-# This script is used to reformat the real PTDO CNA data in a file suitable for ABC model fitting
-
 library(tidyr)
 library(dplyr)
 library(stringr)
 library(ggplot2)
+
+
+# This script is used to reformat the real PTDO CNA data in a file suitable for ABC model fitting
 
 
 ################### Util function #####################
@@ -106,19 +107,19 @@ write_subclonal_events <- function(d_subclonal, fsummary, cutoff_frac = 0.5){
     cat("\nCNA events appearing in more than one cell: \n")
     print(tbl_cna)
   }
-  
+
   dm_subn %>% filter(arm==0) %>% filter(n>1) %>% as.data.frame() -> tbl_chr
   if(nrow(tbl_chr) > 0){
     cat("\nchr-level events appearing in more than one cell: \n")
     print(tbl_chr)
   }
-  
+
   dm_subn %>% filter(arm!=0) %>% filter(n>1) %>% as.data.frame() -> tbl_arm
   if(nrow(tbl_arm) > 0){
     cat("\narm-level events appearing in more than one cell: \n")
     print(tbl_arm)
   }
-  
+
   # d_subclonal %>% group_by(chrom) %>% count()
   # d_subclonal %>% group_by(sample) %>% count()
   # d_subclonal %>% select(chrom, arm, type, cn) %>% unique() %>% nrow()
@@ -151,7 +152,7 @@ get_mp_samples <- function(d_subclonal, fsummary, cutoff_mp = 10){
     if(nrow(sample_mp) > 0){
       print(sample_mp)
     }
-    
+
     d_subclonal %>% filter(sample %in% sample_mp$sample) %>% select(chrom, arm, cn) %>% unique() -> cn_mp_like
     #print(cn_mp_like)
     cn_mp_like %>% filter(arm!=0) %>% nrow() -> n_arm
@@ -384,7 +385,7 @@ plot_cn_heatmap_real <- function(d_seg, ploidy, fout, main, figtype){
 # Extract unique subclonal CNAs
 get_uniq_cn_vec <- function(d_clonal, d_subclonal, ploidy, fsummary){
   sink(fsummary, append = T)
-  
+
   d_subclonal %>% select(chrom, arm, cn) %>% unique() -> dmsc_uniq
 
   dmsc_uniq %>% filter(arm!="whole") %>% nrow() -> n_arm
@@ -408,7 +409,7 @@ get_uniq_cn_vec <- function(d_clonal, d_subclonal, ploidy, fsummary){
   dmsc_cmb = merge(dmsc_uniq, d_clonal_ext_sum, all.x=T) %>% mutate(clonal_cn=replace_na(clonal_cn, ploidy))
   dmsc_cmb$rcn = (dmsc_cmb$cn - dmsc_cmb$clonal_cn)
   dmsc_cmb = dmsc_cmb %>% filter(rcn != 0)
-  
+
   fout = file.path(dir,gsub(".txt", "_uvec.txt", fname))
   write.table(dmsc_cmb, fout, row.names = F, quote = F, col.names = T)
 
@@ -424,7 +425,7 @@ get_uniq_cn_vec <- function(d_clonal, d_subclonal, ploidy, fsummary){
   if(n_chr_cna==0){
     rcn=c(0.0, rcn)
   }
-  
+
   fout = file.path(dir, gsub(".txt", "_rvec.txt", fname))
   write(rcn, file=fout, ncolumns = 1)
 
@@ -433,10 +434,10 @@ get_uniq_cn_vec <- function(d_clonal, d_subclonal, ploidy, fsummary){
 
 
 ############### Parse real dataset ################
-# assuming work directory is CIN_PDO 
+# assuming work directory is CIN_PDO
 # setwd("/Users/ucbtlux/Gdrive/git/cnv_analysis/CIN_PDO")
 bdir = getwd()
-bdir 
+bdir
 
 format="cn"
 
@@ -460,15 +461,15 @@ infiles2
 infiles = setdiff(infiles1, infiles2)
 infiles
 
-################## Plot original callings of CNs ################## 
+################## Plot original callings of CNs ##################
 plot_cn_all <- function(dir, infiles, format, figtype){
   for(i in 1:length(infiles)){
     print(i)
     fname = infiles[i]
     print(fname)
-    
+
     d_real = get_real_data(dir, fname, format)
-    
+
     ploidy = floor(mean(d_real$cn))
     d_annot = get_cn_annot(d_real, chr_end_arm, ploidy)
     #d_real %>% filter(chrom == "chr4") %>% select(start, cn) %>% unique()
@@ -482,10 +483,10 @@ figtype=".png"
 plot_cn_all(dir, infiles, format, figtype)
 
 
-##################  Postprocess for ABC inference ################## 
+##################  Postprocess for ABC inference ##################
 options(digits = 10)
 # https://stackoverflow.com/questions/62140483/how-to-interpret-dplyr-message-summarise-regrouping-output-by-x-override
-options(dplyr.summarise.inform=F)  
+options(dplyr.summarise.inform=F)
 
 # not work as a function, probably due to use of sink()
 for(i in 1:length(infiles)){
@@ -493,34 +494,33 @@ for(i in 1:length(infiles)){
   print(i)
   fname = infiles[i]
   print(fname)
-  
+
   is_complete = F
   if(fname=="dataset_20190409_1.txt"){
     is_complete = T
   }
-  
+
   d_real = get_real_data(dir, fname, format)
   nsample = length(unique(d_real$sample))
   ploidy = floor(mean(d_real$cn))
-  
+
   d_annot = get_cn_annot(d_real, chr_end_arm, ploidy)
-  
+
   fsummary=file.path(dir,gsub(".txt", "_summary.txt", fname))
   sink(fsummary)
   cat(paste("There are", nsample, "cells in the sample\n"))
   cat(paste("\nThe ploidy is", ploidy, "\n"))
-  
+
   res = get_reciprocal_cn(d_annot, fsummary, is_complete, chr2excl, cutoff_clone, cutoff_mp, cutoff_frac)
   d_subclonal = res$subclonal
-  
-  
+
+
   d_clonal = res$clonal
   write_clonal_events(d_clonal, ploidy)
   write_subclonal_events(d_subclonal, fsummary, cutoff_frac)
-  
+
   sink()
-  
+
   # summary statistics for ABC
   get_uniq_cn_vec(d_clonal, d_subclonal, ploidy, fsummary)
 }
-  

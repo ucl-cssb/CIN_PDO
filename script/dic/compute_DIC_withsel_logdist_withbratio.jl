@@ -96,7 +96,6 @@ params = [pst_mu1, pst_mu2, pst_brate, pst_s]
 # Compute surrogate likelihood
 function compute_surrogate_likelihood(simdata, targetdata)
     likelihood = exp.(-0.5 * sqeuclidean(targetdata, simdata)) / sqrt(2 * pi)
-    # likelihood = exp.(-0.5 * sqeuclidean(log.(targetdata), log.(simdata))) / sqrt(2 * pi)
     return likelihood
 end
 

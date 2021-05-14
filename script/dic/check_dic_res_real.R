@@ -5,6 +5,7 @@ library(ggsci)
 
 # Check DIC on real organoid data
 
+bdir = "../data/dic/"  # base directory of the results
 
 get_res_neutral <- function(bdir, suffix){
   files = list.files(bdir, pattern = paste0("dic_neutral.*", suffix))
@@ -65,14 +66,12 @@ plot_dic_both <- function(res_all, bdir, suffix, ftype = ".pdf"){
 
 
 
-bdir = "../data/dic/"  # base directory of the results
 
 weight = "2.0"
 epsilon = 0.2
 suffix = paste0("_logs3_weight", weight)
 suffix = paste0(suffix, "_mut0")
 suffix = paste0(suffix, "_espilon", epsilon)
-
 
 res_all_neutral = get_res_neutral(bdir, suffix)
 res_all_withsel = get_res_withsel(bdir, suffix)

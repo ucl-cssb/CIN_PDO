@@ -108,9 +108,6 @@ function tumourABCneutralcn(params, constants, targetdata)
   simdata = map(x->parse(Float64,x), arr)
   simdata = simdata[1:4]
 
-  # simdata = vcat(log(simdata[1] + 1), log(simdata[2] + 1), log(simdata[3]))
-  # simdata[simdata.=0] .= SMALL_VAL
-  # simdata = vcat(log(simdata[1]), log(simdata[2]), log(simdata[3]))
   if only_mut == 1
       simdata = vcat((simdata[1]), (simdata[2]), s3_weight * log(simdata[3]), log(1+simdata[4]))
   else

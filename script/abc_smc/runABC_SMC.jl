@@ -3,7 +3,7 @@ using Distributions
 using DelimitedFiles
 using Distances
 
-# Run ABC to validate the accuracy of parameter estimation
+# Run ABC assuming neutral model on copy number data only, with two summary statistics
 
 # export JULIA_NUM_THREADS=32
 
@@ -54,7 +54,6 @@ function tumourABCneutralcn(params, constants, targetdata)
   simdata = map(x->parse(Float64,x), arr)
   simdata = simdata[1:2]
 
-
   # r = euclidean(targetdata, simdata)
   r = evaluate(Euclidean(1e-16), targetdata, simdata)
 
@@ -64,8 +63,7 @@ end
 
 setup = ABCSMC(tumourABCneutralcn, #simulation function
     2, # number of parameters
-    epsilon,
-    # parse(Float64, epsilon), # target ϵ
+    parse(Float64, epsilon), # target ϵ
     Prior([Uniform(0, 1), Uniform(0, 1)]), #Prior for each of the parameters
     maxiterations = 9*10^6, #Maximum number of iterations before the algorithm terminates
     nparticles = 500,

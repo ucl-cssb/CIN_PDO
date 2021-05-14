@@ -1,6 +1,8 @@
 library(ggpubr)
 library(snpStats)
 
+# This script is ued to do likelihood-ratio test on simulated pure birth tree
+
 # assuming working directory is "script"
 
 source("./lrt/lrt_util.R")
@@ -431,7 +433,7 @@ test_sim_merged_fixt <- function(b0, b1s, times, use_root = F){
 
 
 
-############### check null distribution (Suppl Fig 4) #################
+############### check null distribution  #################
 # check H0 for single trees
 # when t < 10, observed values seem smaller than expected value
 ntest = 1000
@@ -446,12 +448,12 @@ nres = nrow(res_sim)
 df = 1
 
 # have to save manually
-# may slightly different from Suppl Fig 7 in the doc due to random seed
+# may slightly different from that in the paper due to random seed
 qq.chisq(res_sim$test_stat, 1, ylab=paste0("Observed value (", nres, " trees with t = ", t, ")"), main=paste("Expected distribution: chi-squared (", df," df)"), xlab="Expected value of test statistics", sub = "")
 
 
 
-############## get all powers for suppl doc (Suppl Table 3) ################
+############## power analysis  ################
 # Assuming H1, estimate power as fraction of simulated trees correctly inferred s < 0
 
 # Do this for single tree, four trees combined and 60 trees combined
@@ -633,7 +635,7 @@ fout = file.path(dir, paste0("sum_sim_ndeath_t", t, "_nrun", nrun, "_b0", b, "_n
 write_tsv(sum_ndeath_old, fout)
 
 
-####################### check exponential distribution of BLs (Suppl Fig. 7)  ######################
+####################### check exponential distribution of BLs   ######################
 # simulated trees under H0 fit lambda (estimated vs real)
 # see how strengths of the selection affects the empirical distribution
 # simulated  individual trees under H1 fit lambda (estimated vs real)
@@ -759,7 +761,7 @@ get_blen_distr_joint <- function(b0, b1, t, ntree, nbins = 10, ylim = 0.5, xlim 
     #print(st)
     nblen = nblen + nrow(st$edge)
   }
-  #main = paste0("Normal subtree, ", nblen, " branches", "\nsimulation until time ", t, ", ", ntree, " trees", "\nestimated cell cycle duration ", sprintf("%.1f", 1 / res_h0$lambda), " (day)")
+
   main = paste0(ntree, " trees", ", ",  nblen, " branches", "\nsimulation until time ", t, "\nestimated cell cycle duration ", sprintf("%.1f", 1 / res_h0$lambda), " (day)")
   # plot simulated branch length distribution with estimated or real rate
   elens_n = blen_all %>% filter(type == "N")

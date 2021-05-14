@@ -1,6 +1,6 @@
-# Test the imaged cell division tree to see if there is evidence of (negative) selection
-
 library(ggpubr)
+
+# This script is ued to do likelihood-ratio test on the imaged cell division tree to see if there is evidence of (negative) selection
 
 # assuming working directory is "script"
 
@@ -20,7 +20,6 @@ dir2 = file.path(dir, "60trees")
 # timing at first 2 branches are artificial
 # timing at the 3rd to 6th branches are underestimated since the imaging starts from two cells
 infiles1 = list.files(dir1, pattern = "[0-9].nwk$")
-# only consider old datasets
 infiles1
 infiles2 = list.files(dir1, pattern = ".*div.*[1-9].nwk$")
 infiles2
@@ -29,7 +28,6 @@ infiles_t4
 
 
 infiles_t60 = list.files(dir2, pattern = "[0-9].nwk$")
-# only consider old datasets
 infiles_t60
 
 infiles = c()
@@ -282,8 +280,6 @@ get_lnl_h0_all <- function(trees_all, lambda, use_root = T){
   loglik = 0
 
   for(i in 1:length(trees_all)){
-    #i = 5
-    #lambda = yule_all[i, ]$lambda
     phy = trees_all[[i]]
     tname = names(trees_all)[i]
     X <- sum(phy$edge.length)
@@ -306,8 +302,6 @@ get_lnl_h0_all <- function(trees_all, lambda, use_root = T){
     lnl = -lambda * X + lfactorial(phy$Nnode) + nb.node * log(lambda)
     #print(lnl)
     loglik = loglik + lnl
-    # loglik
-    # yule_all[i,]
   }
 
   return (list(loglik = loglik, lambda = lambda))
@@ -367,7 +361,6 @@ get_tlen_nbirth <- function(dir, trees_all, suffix = "_full.txt", use_root = T){
 
   for(i in 1:length(trees_all)){
     #i = yule_all %>% filter(dataset=="early_P5_OE_98") %>% select(id) %>% unlist()
-    #i = 54
     tname = names(trees_all)[i]
     if(suffix == "_full.txt" && !startsWith(tname, "early")){
       next
@@ -1136,9 +1129,6 @@ get_lnl_h1_all <- function(dir, trees_all, lambda0, use_root, use_mle, use_error
   }
   #print(lnl_decom)
 
-  # check branch length distributions
-
-
   return (list(loglik = lnl_decom, lambda = lambda1, blens_err = blens_err, nbirth = nbirth))
 }
 
@@ -1295,7 +1285,7 @@ res_yule
 
 
 
-######################## check branch length distribution in real data (Suppl Fig. 5) #########################
+######################## check branch length distribution in real data #########################
 # For new datasets (60 trees)
 get_new_blen <- function(dir, files, use_root = F){
   dblen = data.frame()
@@ -1331,7 +1321,6 @@ get_new_blen <- function(dir, files, use_root = F){
 
 
 get_blen_hist_real <- function(dblens, nbins = 30, use_freq = F, ylim = 1.0, xlim = 5, add_lbl = F,  add_curve = F, add_fit = F, use_density = F, lambdas = c(), nrow = 1, color = "blue"){
-  #dblens = dblen0_full_nr
   bsize = xlim / nbins
   br = seq(0, xlim, bsize)
   dblens %>% filter(type == "N") -> dblen_N
@@ -1344,7 +1333,6 @@ get_blen_hist_real <- function(dblens, nbins = 30, use_freq = F, ylim = 1.0, xli
   ntree = length(unique(dblens$dataset))
   nblen = nrow(dblen_N)
   main = paste0(ntree, " trees, ", nblen, " branches")
-  #main2 = paste0(ntree, " trees, ", nblen, " branches", "\nestimated birth rate ", sprintf("%.2f", lambdas[1]))
   main2 = paste0(ntree, " trees, ", nblen, " branches", "\nestimated cell cycle duration ", sprintf("%.1f", 1 / lambdas[1]), " (day)")
   if(use_freq){
     pnr = ggplot(dblen_N, aes(time, y = stat(count) / sum(count))) + geom_histogram(breaks = br, color="black", fill="lightblue") + xlab("branch length before mis-segregation") + scale_x_continuous(limits = c(0, xlim)) + theme_pubr() + ggtitle(main) + ylab("frequency") + scale_y_continuous(limits = c(0, ylim))
@@ -1364,15 +1352,12 @@ get_blen_hist_real <- function(dblens, nbins = 30, use_freq = F, ylim = 1.0, xli
   }
   if(add_fit){
     df_exp = get_exp_per_bin(br, 2 * lambdas[1])
-    # ggplot(df_exp, aes(x = bin, y=val)) + geom_point() + geom_line(color = "red", linetype="dashed") + theme_pubr()
     pnr = pnr + geom_point(data = df_exp, mapping = aes(x = bin, y=val)) + geom_line(data = df_exp, mapping = aes(x = bin, y=val), color = color, linetype="dashed") + ggtitle(main2)
-    #+ geom_line(color = "red", linetype="dashed")
   }
 
 
   nblen = nrow(dblen_E)
   main = paste0(ntree, " trees, ", nblen, " branches")
-  # main2 = paste0(ntree, " trees, ", nblen, " branches", "\nestimated birth rate ", sprintf("%.2f", lambdas[2]))
   main2 = paste0(ntree, " trees, ", nblen, " branches", "\nestimated cell cycle duration ", sprintf("%.1f", 1 / lambdas[2]), " (day)")
   if(use_freq){
     per = ggplot(dblen_E, aes(time, y = stat(count) / sum(count))) + geom_histogram(breaks = br, color="black", fill="lightblue") + xlab("branch length after mis-segregation")  + scale_x_continuous(limits = c(0, xlim)) + theme_pubr() + ggtitle(main) + ylab("frequency") + scale_y_continuous(limits = c(0, ylim))
@@ -1390,9 +1375,7 @@ get_blen_hist_real <- function(dblens, nbins = 30, use_freq = F, ylim = 1.0, xli
   }
   if(add_fit){
     df_exp = get_exp_per_bin(br, 2 * lambdas[2])
-    # ggplot(df_exp, aes(x = bin, y=val)) + geom_point() + geom_line(color = "red", linetype="dashed") + theme_pubr()
     per = per + geom_point(data = df_exp, mapping = aes(x = bin, y=val)) + geom_line(data = df_exp, mapping = aes(x = bin, y=val), color = color, linetype="dashed") + ggtitle(main2)
-    #+ geom_line(color = "red", linetype="dashed")
   }
 
   pm = ggarrange(pnr, per, nrow = nrow)

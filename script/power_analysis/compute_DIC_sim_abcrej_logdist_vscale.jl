@@ -7,10 +7,7 @@ using Statistics
 
 
 # Compute DIC for ABC rejection on simulated data directly based on simulated summary statistics under different models
-# Compute DIC just once for n replicates
-# Use standard deviation to scale summary statistics
 
-# DIC = 2 * (D~bar) - D(theta~bar)
 
 # For a given set of parameters, simulate 10 target datasets
 ntest = parse(UInt32, ARGS[1])
@@ -30,7 +27,6 @@ end
 # ndic = 1
 # num_sample = 10
 # ncell = 20
-# # target_fitness = 0
 # target_fitness = -0.2
 
 println(ncell)
@@ -52,7 +48,6 @@ nsample = num_sample
 msample = num_sample
 
 nsims=100000
-# acc=0.005
 acc=0.001
 
 
@@ -279,24 +274,17 @@ end
 # separate abc from dic computation to check posterior distribution
 function get_abc_res(type, simdata_all, sstart, scales, ncell, nsims, msample, nsample, targetdata, agg_func, acc)
     # println("running abc rej")
-    # println(targetdata)
-    # targetdata[targetdata.==0] .= SMALL_VAL
     # targetdata = vcat(log(targetdata[1] + 1)/scales[1], log(targetdata[2] + 1)/scales[2], log(targetdata[3])/scales[3])
-    # targetdata = vcat(log(targetdata[1])/scales[1], log(targetdata[2])/scales[2], log(targetdata[3])/scales[3])
     targetdata = vcat((targetdata[1]), (targetdata[2]), s3_weight * log(targetdata[3]))
 
     dim_stat = size(simdata_all, 2)  # dimension of simulation results
     # Compute the distance between simulated data and targetdata
     dists = zeros(Float64, nsims)
     for i in 1:nsims
-        # i =1
         simdata1 = simdata_all[i, :]
 
-        # simdata = vcat(simdata1[sstart:sstart+1], log(simdata1[sstart+2]/ncell))
         simdata = simdata1[sstart:sstart+2]
         # println("original simdata ", simdata)
-        # simdata[simdata.==0] .= SMALL_VAL
-        # simdata = vcat(log(simdata[1])/scales[1], log(simdata[2])/scales[2], log(simdata[3])/scales[3])
         # simdata = vcat(log(simdata[1] + 1)/scales[1], log(simdata[2] + 1)/scales[2], log(simdata[3])/scales[3])
         simdata = vcat((simdata[1]), (simdata[2]), s3_weight * log(simdata[3]))
 
@@ -324,30 +312,21 @@ end
 fout = simdir * "/dic_ncell" * string(ncell) * "_fitness" * string(target_fitness) * "_ntest" * string(ntest) * "_ndic" * string(ndic) * "_nsample" * string(num_sample) * "_f" * string(agg_func) * "_acc" * string(acc) *  rsuffix
 
 fsim_suffix = "_ncell" * string(ncell)  * "_n" * string(nsims) * "_maxmu" * string(max_mu) * "_minb" * string(min_brate) * "_maxb" * string(max_brate) * ".tsv"
-# fsim_suffix = "_ncell" * string(ncell)  * "_n" * string(nsims) * "_tnorm.tsv"
 
 type = "neutral"
 fsim = simdir * "/sim_data_" * type * fsim_suffix
 simdata_all_neutral = readdlm(fsim)
 sstart_neutral = 5  # start index of summary statistics, from 5 when estimating birth rate
-# std_neutral = get_sstat_var(simdata_all_neutral, sstart_neutral)
 
 type = "selection"
 fsim = simdir * "/sim_data_" * type * fsim_suffix
 simdata_all_selection = readdlm(fsim)
 sstart_selection = 6
-# std_selection = get_sstat_var(simdata_all_selection, sstart_selection)
 
 # no need to do scaling when assuming neutral model
 scales_neutral = [1, 1, 1]
 scales_selection = [1, 1, 1]
-# scales_selection = [1, 1, std_selection[3]]
 
-# scales_neutral = [std_neutral[1], std_neutral[2], 1]
-# scales_selection = [std_selection[1], std_selection[2], 1]
-
-# std_all = get_sstat_var(simdata_all_sstat)
-# scales_selection =
 
 if target_fitness == 0
     println("target data under neutral evolution")
@@ -356,23 +335,16 @@ if target_fitness == 0
         for i in 1:ntest
             seed = rand(UInt64, 1)[1]
             targetdata = getTargetdata_neutral(seed, mu_sim1, mu_sim2, brate_sim)
-            # println("original targetdata ", targetdata)
-            # targetdata = vcat(targetdata[1:2], log(targetdata[3]/ncell))
             # println(targetdata)
 
             for j in 1:ndic
-                # println(targetdata)
                 type = "neutral"
                 abcres_neutral = get_abc_res(type, simdata_all_neutral, sstart_neutral, scales_neutral, ncell, nsims, msample, nsample, targetdata, agg_func, acc)
-                # println(targetdata)
                 dic_neutral = get_dic_by_type(type, abcres_neutral, msample, nsample, targetdata, agg_func, scales_neutral)
-                # println(targetdata)
 
                 type = "selection"
                 abcres_withsel = get_abc_res(type, simdata_all_selection, sstart_selection, scales_selection, ncell, nsims, msample, nsample, targetdata, agg_func, acc)
-                # println(targetdata)
                 dic_withsel = get_dic_by_type(type, abcres_withsel, msample, nsample, targetdata, agg_func, scales_selection)
-                # println(targetdata)
 
                 # println(string(dic_neutral) * " " * string(dic_withsel))
                 res = vcat(ncell, mu_sim1, mu_sim2, brate_sim, target_fitness, seed, targetdata, j, dic_neutral, dic_withsel)
@@ -392,9 +364,6 @@ else
         for i in 1:ntest
             seed = rand(UInt64, 1)[1]
             targetdata = getTargetdata_withsel(seed, mu_sim1, mu_sim2, brate_sim, target_fitness)
-
-            # println(targetdata)
-            # targetdata = vcat(targetdata[1:2], log(targetdata[3]/ncell))
             # println(targetdata)
             for j in 1:ndic
                 type = "neutral"

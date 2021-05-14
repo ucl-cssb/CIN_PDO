@@ -3,7 +3,8 @@ using Distributions
 using DelimitedFiles
 using Distances
 
-# Run ABC to validate the accuracy of parameter estimation
+
+# Run ABC assuming selection model, with four summary statistics (including branch length ratios when available)
 
 # export JULIA_NUM_THREADS=32
 
@@ -14,16 +15,11 @@ epsilon = ARGS[3]
 s3_weight = parse(Float64, ARGS[4])
 only_mut = parse(UInt32, ARGS[5])
 
-
-# Run ABC SMC assuming selection model, with four summary statistics (including branch length ratios when available)
-
-
 # dataset="dataset_20190409_1"
 # ncell=25
 #
 # dataset="dataset_20190409_2"
 # ncell=13
-# # epsilon=1.0
 #
 # dataset="dataset_20181127"
 # ncell=24
@@ -118,9 +114,6 @@ function tumourABCneutralcn(params, constants, targetdata)
   simdata = map(x->parse(Float64,x), arr)
   simdata = simdata[1:4]
 
-  # simdata = vcat(log(simdata[1] + 1), log(simdata[2] + 1), log(simdata[3]))
-  # simdata[simdata.=0] .= SMALL_VAL
-  # simdata = vcat(log(simdata[1]), log(simdata[2]), log(simdata[3]))
   if only_mut == 1
       simdata = vcat((simdata[1]), (simdata[2]), s3_weight * log(simdata[3]), log(1+simdata[4]))
   else
@@ -128,7 +121,6 @@ function tumourABCneutralcn(params, constants, targetdata)
   end
 
   r = euclidean(targetdata, simdata)
-  # r = evaluate(Euclidean(1e-16), log.(targetdata), log.(simdata))
 
   return r, 1
 end
@@ -146,8 +138,7 @@ setup = ABCSMC(tumourABCneutralcn, #simulation function
     constants = [ncell],
   )
 
-# targetdata = vcat(log(targetdata[1]), log(targetdata[2]), log(targetdata[3]))
-# targetdata = vcat(log(targetdata[1] + 1), log(targetdata[2] + 1), log(targetdata[3]))
+
 if only_mut == 1
     targetdata = vcat((targetdata[1]), (targetdata[2]), s3_weight * log(targetdata[3]), log(1+targetdata[4]))
 else

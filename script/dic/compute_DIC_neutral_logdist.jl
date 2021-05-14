@@ -67,7 +67,7 @@ pst_brate = mean(smcres.parameter3, weights(smcres.weights))
 params = [pst_mu1, pst_mu2, pst_brate]
 
 
-# Compute surrogate likelihood (based on log distance given different range of summary statistics)
+# Compute surrogate likelihood 
 function compute_surrogate_likelihood(simdata, targetdata)
     likelihood = exp.(-0.5 * sqeuclidean(targetdata, simdata)) / sqrt(2 * pi)
     return likelihood

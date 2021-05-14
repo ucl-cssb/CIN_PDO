@@ -2,12 +2,12 @@
 
 This folder contains the main data and results of computational modelling in the paper.
 
-## Directory trees:
+## Directory *trees*:
 
 * trees_all64.pdf:
 The plots of all the 64 image trees.
 
-### Directory 4trees:
+### Directory *4trees*:
 This folder contains the seven datasets reported in the main text of the paper. Four of the datasets have image trees.
 For each dataset without image tree, there are only two files related to copy numbers.
 
@@ -56,7 +56,7 @@ This original image (phylogenetic) tree in the format of edge list, with an addi
 | PDTO-9 #6 | "20200204" |
 
 
-### Directory 60trees:
+### Directory *60trees*:
 This folder contains additional 60 trees used in the likelihood-ratio test of birth rate change after mitotic errors in pure birth tree.
 For each tree, there are 3 files.
 
@@ -71,19 +71,19 @@ The image (phylogenetic) tree in the format of edge list.
 The image (phylogenetic) tree in the format of edge list and an additional column suggesting whether each node (cell division) is normal (N) or has mitotic errors (E).
 
 
-## Directory abc_smc:
+## Directory *abc_smc*:
 This folder contains the results of running ABC SMC on the real data under neutral model (in sudfolder **neutral**) and selection model (in sudfolder **selection**), respectively.
 
 
-## Directory dic:
+## Directory *dic*:
 The folder contains the results of computing DIC (deviance information criterion) on the real data under neutral model and selection model, respectively.
 
 
-## Directory power_analysis:
+## Directory *power_analysis*:
 The folder contains the results of power analysis (model selection under different sets of parameters) on simulated data.
 
 
-## cytoBand_hg19.txt:
+## File *cytoBand_hg19.txt*:
 This file is used for converting copy number alterations into arm-level.
-It is downloaded from UCSC by command: \
+It was downloaded from UCSC by command: \
 `wget https://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/cytoBand.txt.gz`.

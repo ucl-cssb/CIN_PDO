@@ -1,8 +1,8 @@
-# This script is used to plot the estimates of parameters for real data
-
 library(tidyverse)
 library(ggpubr)
 library(ggsci)
+
+# This script is used to plot the estimates of parameters for real data
 
 # assuming working directory is "script"
 
@@ -70,16 +70,13 @@ get_res_diploid <- function(dir, suffix="", epsilon=0.1, incl_cna_only = T, with
   ncell = 25
   res = get_res(dir, dataset, ncell, epsilon, type, brate, suffix)
   resall = rbind(resall, res)
-  #rates = data.frame(division_rate=median(res$division_rate), chr_rate=median(res$chr_rate), arm_rate=median(res$arm_rate), dataset=dataset, ncell = ncell)
   rates = data.frame(division_rate=weighted.mean(res$division_rate, res$weight), chr_rate=weighted.mean(res$chr_rate, res$weight), arm_rate=weighted.mean(res$arm_rate, res$weight), dataset=dataset, ncell = ncell)
   rateall = rbind(rateall, rates)
-  #names(rateall) = c("division_rate", "chr_rate", "arm_rate", "dataset")
 
   # dataset = "dataset_20190409_2"
   # ncell = 13
   # res = get_res(dir, dataset, ncell, epsilon, type, brate, suffix)
   # resall = rbind(resall, res)
-  # #rates = data.frame(division_rate=median(res$division_rate), chr_rate=median(res$chr_rate), arm_rate=median(res$arm_rate), dataset=dataset, ncell = ncell)
   # rates = data.frame(division_rate=weighted.mean(res$division_rate, res$weight), chr_rate=weighted.mean(res$chr_rate, res$weight), arm_rate=weighted.mean(res$arm_rate, res$weight), dataset=dataset, ncell = ncell)
   # rateall = rbind(rateall, rates)
 
@@ -87,7 +84,7 @@ get_res_diploid <- function(dir, suffix="", epsilon=0.1, incl_cna_only = T, with
   ncell = 24
   res = get_res(dir, dataset, ncell, epsilon, type, brate, suffix)
   resall = rbind(resall, res)
-  #rates = data.frame(division_rate=median(res$division_rate), chr_rate=median(res$chr_rate), arm_rate=median(res$arm_rate), dataset=dataset, ncell = ncell)
+
   rates = data.frame(division_rate=weighted.mean(res$division_rate, res$weight), chr_rate=weighted.mean(res$chr_rate, res$weight), arm_rate=weighted.mean(res$arm_rate, res$weight), dataset=dataset, ncell = ncell)
   rateall = rbind(rateall, rates)
 
@@ -95,7 +92,6 @@ get_res_diploid <- function(dir, suffix="", epsilon=0.1, incl_cna_only = T, with
   ncell = 19
   res = get_res(dir, dataset, ncell, epsilon, type, brate, suffix)
   resall = rbind(resall, res)
-  #rates = data.frame(division_rate=median(res$division_rate), chr_rate=median(res$chr_rate), arm_rate=median(res$arm_rate), dataset=dataset, ncell = ncell)
   rates = data.frame(division_rate=weighted.mean(res$division_rate, res$weight), chr_rate=weighted.mean(res$chr_rate, res$weight), arm_rate=weighted.mean(res$arm_rate, res$weight), dataset=dataset, ncell = ncell)
   rateall = rbind(rateall, rates)
 
@@ -199,7 +195,6 @@ get_res_all_withsel <- function(dir, suffix="", epsilon=0.1){
   resall = rbind(resall, res)
   rates = data.frame(division_rate=median(res$division_rate), chr_rate=median(res$chr_rate), arm_rate=median(res$arm_rate), dataset=dataset, ncell = ncell)
   rateall = rbind(rateall, rates)
-  #names(rateall) = c("division_rate", "chr_rate", "arm_rate", "dataset")
 
   dataset = "dataset_20190409_2"
   ncell = 13
@@ -320,15 +315,13 @@ plot_by_group <- function(rateall, resall, dir, pal, suffix, ftype = ".pdf"){
   p2 = ggplot(resall, aes(x=dataset, y=arm_rate, fill=dataset, weight = weight)) +
     geom_violin(scale = "width")+
     geom_boxplot(width=0.1, fill="white") + ylab(lab2) + theme_pubr() + scale_fill_manual(values = pal) + guides(fill = guide_legend(nrow = 1)) + theme_pubr() + theme(axis.text.y = element_blank()) + scale_x_discrete(limits=d_arm$dataset) + coord_flip() + xlab("") + geom_hline(yintercept = weighted.mean(resall$arm_rate, resall$weight), color = "darkgrey", linetype = "dashed") + scale_y_continuous(n.breaks = 6)
-  p2
 
   resall %>% filter(type=="joint") -> resjoint
-  # summary(resjoint$division_rate)
-  # var(resjoint$division_rate)
   p3 = ggplot(resjoint, aes(x=dataset, y=division_rate, fill=dataset, weight = weight)) +
     geom_violin(scale = "width") +
     geom_boxplot(width=0.1, fill="white") + ylab("cell division rate (per day)") + theme_pubr() + theme(axis.text.x = element_blank()) + scale_fill_manual(values = pal) + guides(fill = guide_legend(nrow = 1)) + theme_pubr() + theme(axis.text.y = element_blank()) + coord_flip() + xlab("") + geom_hline(yintercept = weighted.mean(resjoint$division_rate, resjoint$weight), color = "darkgrey", linetype = "dashed") + scale_y_continuous(n.breaks = 6)
-  p3
+
+
   ggarrange(p1, p2, p3,
             ncol = 3, nrow = 1, common.legend = T)
 
@@ -350,8 +343,6 @@ plot_mu_brate <- function(rateall, resall, dir, pal, suffix, ftype){
   resall$mut_rate = resall$chr_rate + resall$arm_rate
 
   resall %>% filter(type=="joint") -> resjoint
-  # summary(resjoint$division_rate)
-  # var(resjoint$division_rate)
 
   p1 = ggplot(resall, aes(x=dataset, y=mut_rate, fill=dataset, weight = weight)) +
       geom_violin(scale = "width")+
@@ -376,7 +367,6 @@ get_epsilon <- function(dir, files, prefix, fprefix = "smc-joint-", ftype = ""){
   res_epsilons_all = data.frame()
   nsim_all = data.frame()
   for(i in 1:length(files)){
-    #i=1
     f = files[i]
     fname = file.path(dir, f)
 
@@ -385,7 +375,6 @@ get_epsilon <- function(dir, files, prefix, fprefix = "smc-joint-", ftype = ""){
     if(grepl(pname, "20190409")){
       pname = paste(pname, strsplit(fields,"_")[[1]][3], sep="_")
     }
-    #pname = strsplit(pname,"-")[[1]][2]
     print(pname)
 
     fcon = file(fname, "r")
@@ -430,7 +419,7 @@ get_epsilon <- function(dir, files, prefix, fprefix = "smc-joint-", ftype = ""){
 
 
 
-################## parse just plot datasets with only CNAs (Suppl Fig. 2) ##################
+################## parse just plot datasets with only CNAs ##################
 res_cna = get_res_all_cna(dir)
 resall = res_cna$resall
 rateall = res_cna$rateall
@@ -497,20 +486,19 @@ var(resall$mut_rate)
 
 
 
-############# PLot parameter posteriors (extended Fig 14b and Suppl Fig 1) ##################
+############# PLot parameter posteriors  ##################
 pal = c('#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628','#f781bf','#999999')
 
 fsuffix = paste0(suffix, "_epsilon", epsilon)
-#fsuffix = "_final_mixed"
 
-# plot for joint mu used in suppl doc (Suppl Fig. 1)
+# plot for joint mu
 plot_rate_all(rateall, resall, dir, pal, fsuffix, ftype)
 
+# plot joint mu and birth rate
 #plot_mu_brate(rateall, resall, dir, pal, fsuffix, ftype)
 
-# used in extend Fig (14b)
+# plot all 3 parameters
 plot_by_group(rateall, resall, dir, pal, fsuffix, ftype)
-#plot_by_group(rateall, resall, dir, pal, fsuffix, ".tiff")
 
 
 ############## Compare inferences between models (validation)  ##############

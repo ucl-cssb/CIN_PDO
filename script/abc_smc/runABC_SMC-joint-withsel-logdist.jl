@@ -18,7 +18,6 @@ s3_weight = parse(Float64, ARGS[4])
 
 # dataset="dataset_20190409_2"
 # ncell=13
-# epsilon=1.0
 
 println(dataset)
 println(ncell)
@@ -71,13 +70,9 @@ function tumourABCneutralcn(params, constants, targetdata)
   simdata = map(x->parse(Float64,x), arr)
   simdata = simdata[1:3]
 
-  # simdata = vcat(log(simdata[1] + 1), log(simdata[2] + 1), log(simdata[3]))
-  # simdata[simdata.=0] .= SMALL_VAL
-  # simdata = vcat(log(simdata[1]), log(simdata[2]), log(simdata[3]))
   simdata = vcat((simdata[1]), (simdata[2]), s3_weight * log(simdata[3]))
 
   r = euclidean(targetdata, simdata)
-  # r = evaluate(Euclidean(1e-16), log.(targetdata), log.(simdata))
 
   return r, 1
 end
@@ -95,8 +90,7 @@ setup = ABCSMC(tumourABCneutralcn, #simulation function
     constants = [ncell],
   )
 
-# targetdata = vcat(log(targetdata[1]), log(targetdata[2]), log(targetdata[3]))
-# targetdata = vcat(log(targetdata[1] + 1), log(targetdata[2] + 1), log(targetdata[3]))
+
 targetdata = vcat((targetdata[1]), (targetdata[2]), s3_weight * log(targetdata[3]))
 
 smc = runabc(setup, targetdata, verbose = true, progress = true, parallel = true)

@@ -104,9 +104,7 @@ function gen_simulations_withsel(fout, ncell, nsims, dim_stat)
 end
 
 
-# suffix = string(ncell) * "_n" * string(nsims) * "_tnorm.tsv"
-# used for current figure
-# suffix = string(ncell) * "_n" * string(nsims) * "_maxmu" * string(max_mu) * "_minb" * string(min_brate) * "_maxb" * string(max_brate) * ".tsv"
+
 # adding average of branch ratios
 if only_mut == 1
     suffix = string(ncell) * "_n" * string(nsims) * "_maxmu" * string(max_mu) * "_minb" * string(min_brate) * "_maxb" * string(max_brate) * "_withbratio_mut.tsv"
@@ -114,18 +112,17 @@ else
     suffix = string(ncell) * "_n" * string(nsims) * "_maxmu" * string(max_mu) * "_minb" * string(min_brate) * "_maxb" * string(max_brate) * "_witheblen.tsv"
 end
 
-# Simulate
+# Change dim_stat according to the number of summary statistics
 if model == 0
     println("simulate data under neutral evolution")
     fout = simdir * "sim_data_neutral_ncell" * suffix
-    # fout = simdir * "sim_data_neutral_ncell" *
-    # dim_stat=11
-    dim_stat=13
+    # 8 summary statistics
+    dim_stat=12
     gen_simulations_neutral(fout, ncell, nsims, dim_stat)
 else
     println("simulate data with selection")
     fout = simdir * "sim_data_selection_ncell" * suffix
-    # dim_stat=12
-    dim_stat=14
+    # 8 summary statistics, one more column (fitness) than neutral model
+    dim_stat=13
     gen_simulations_withsel(fout, ncell, nsims, dim_stat)
 end

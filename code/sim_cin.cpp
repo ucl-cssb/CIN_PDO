@@ -211,7 +211,6 @@ Clone run_sim(double birth_rate, double death_rate, int Nend, double arm_prob, d
             for(int i = 1; i < blens.size(); i++){
                 cout << "\t" << blens[i];
             }
-            // cout << endl;
             cout << "\t";
         }
     }else{
@@ -235,9 +234,9 @@ Clone run_sim(double birth_rate, double death_rate, int Nend, double arm_prob, d
         }
         cout << avg_ratio << "\t";
 
-        // Output half the sum length of branches after immediate CNAs
-        double elen = clone.get_elen(clone.cells, skip);
-        cout << elen << "\t";
+        // Output half the sum length of branches after immediate CNAs (seem not working well)
+        // double elen = clone.get_elen(clone.cells, skip);
+        // cout << elen << "\t";
     }
 
     int ndenovo = 0;
