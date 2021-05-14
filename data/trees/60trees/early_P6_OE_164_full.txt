@@ -1,0 +1,5 @@
+type parent child length
+N 4 5 505
+N 4 3 62
+N 5 1 396
+N 5 2 396

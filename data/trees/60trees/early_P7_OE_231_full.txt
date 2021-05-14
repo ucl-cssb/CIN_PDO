@@ -1,0 +1,7 @@
+type parent child length
+N 5 6 551
+N 5 7 592
+N 6 1 320
+N 6 2 320
+E 7 3 279
+E 7 4 279

@@ -1,0 +1,4 @@
+Median (95% intervals):
+chr-level CNA rate: 0.07 (0.01, 0.21)
+arm-level CNA rate: 0.21 (0.07, 0.42)
+cell division rate: 0.32 (0.21, 0.54)

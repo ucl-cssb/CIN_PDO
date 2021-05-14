@@ -1,13 +1,18 @@
 # Introduction
-This program simulates the growth of a patient tumour-derived organoid (PDTO) with a stochastic birth-death branching process to learn mutation rates and selection strengths.
 
+This repository contains the simulation program and main scripts used for modelling organoid data in paper: \
+Reconstructing single-cell karyotype alterations in colorectal cancer reveals punctuated and gradual diversification patterns.
+Yannik Bollen, Ellen Stelloo, Petra van Leenen, Myrna van den Bos, Bas Ponsioen, Bingxin Lu, et al. (2021), *Nature Genetics*, accepted.
+
+This main program (in directory __code__) simulates the growth of a patient tumour-derived organoid (PDTO) with a stochastic birth-death branching process to learn mutation rates and selection strengths.
 It generates cell lineage tree and single-cell copy number profiles (CNPs). It can also simulate bulk CNPs (average CNPs of all cells in an organoid) of multiple organoids.
-
-
 Only relative arm-/chr-level CNAs are simulated.
 All CNAs are assumed to be reciprocal.
-
 A set of summary statistics is computed from simulated data, which is used by ABC (approximate Bayesian computation) approach to fit real data.
+
+The directory __script__ contains the main scripts used for the modelling (parameter estimation, model selection, and likelihood-ratio test) in the paper.
+
+The directory __data__ contains the main data and modelling results in the paper.
 
 
 # Install

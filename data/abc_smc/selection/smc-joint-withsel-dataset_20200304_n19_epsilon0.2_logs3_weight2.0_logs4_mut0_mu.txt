@@ -1,0 +1,5 @@
+Median (95% intervals):
+chr-level CNA rate: 0.24 (0.1, 0.41)
+arm-level CNA rate: 0.1 (0.02, 0.23)
+birth rate: 0.74 (0.26, 1.85)
+selection coefficient: -0.57 (-0.91, -0.01)

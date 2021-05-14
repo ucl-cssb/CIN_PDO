@@ -1,0 +1,7 @@
+type parent child length
+E 5 1 894
+E 5 6 407
+E 6 7 456
+E 6 4 487
+E 7 2 31
+E 7 3 31
