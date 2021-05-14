@@ -1,6 +1,6 @@
 # Introduction
 
-This repository contains the simulation program and main scripts used for modelling organoid data in paper: \
+This repository (CIN_PDO) contains the simulation program and main scripts used for modelling chromosomal instability (CIN) observed in the patient tumor derived organoid (PDO) data in paper: \
 Reconstructing single-cell karyotype alterations in colorectal cancer reveals punctuated and gradual diversification patterns.
 Yannik Bollen, Ellen Stelloo, Petra van Leenen, Myrna van den Bos, Bas Ponsioen, Bingxin Lu, et al. (2021), *Nature Genetics*, accepted.
 
