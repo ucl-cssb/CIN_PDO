@@ -1,11 +1,11 @@
 # Introduction
 
-This repository (CIN_PDO) contains the simulation program and scripts used for modelling chromosomal instability (CIN) observed in the patient tumor derived organoid (PDO) data in paper:
+This repository (CIN_PDO) contains the simulation program and scripts used for modelling chromosomal instability (CIN) observed in the patient-derived tumor organoid (PDO) data in paper:
 
 Reconstructing single-cell karyotype alterations in colorectal cancer reveals punctuated and gradual diversification patterns.
 Yannik Bollen, Ellen Stelloo, Petra van Leenen, Myrna van den Bos, Bas Ponsioen, Bingxin Lu, et al. (2021), *Nature Genetics*, accepted.
 
-The main program (in directory __code__) simulates the growth of a patient tumour-derived organoid (PDTO) with a stochastic birth-death branching process.
+The main program (in directory __code__) simulates the growth of a patient-derived tumor organoid with a stochastic birth-death branching process.
 It generates cell lineage tree and single-cell copy number profiles (CNPs). It can also simulate bulk CNPs (average CNPs of all cells in an organoid) of multiple organoids.
 Only relative arm-/chr-level CNAs are simulated.
 All CNAs are assumed to be reciprocal.
